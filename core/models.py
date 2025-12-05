@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 class User(AbstractUser):
     ROLE_ADMIN = "admin"
     ROLE_DIRECTOR = "director"
@@ -15,6 +16,11 @@ class User(AbstractUser):
     ]
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_PATIENT)
+    gender = models.CharField(max_length=10, blank=True)
+    birthdate = models.DateField(null=True, blank=True)
+    phone = models.CharField(max_length=50, blank=True)
+    address = models.TextField(blank=True)
+    tags = models.CharField(max_length=255, blank=True)
 
     def is_admin(self):
         return self.role == self.ROLE_ADMIN or self.is_superuser
@@ -28,29 +34,34 @@ class User(AbstractUser):
     def is_patient(self):
         return self.role == self.ROLE_PATIENT
 
+
 class Branch(models.Model):
     name = models.CharField(max_length=200)
     address = models.TextField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
+    director = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="directed_branches")
 
     def __str__(self):
         return self.name
 
+
 class DoctorProfile(models.Model):
-    user = models.OneToOneField("User", on_delete=models.CASCADE, related_name="doctor_profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="doctor_profile")
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True)
     specialization = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return f"Dr. {self.user.get_full_name() or self.user.username}"
 
+
 class PatientProfile(models.Model):
-    user = models.OneToOneField("User", on_delete=models.CASCADE, related_name="patient_profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient_profile")
     phone = models.CharField(max_length=50, blank=True)
     birthdate = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.user.get_full_name() or self.user.username
+
 
 class Appointment(models.Model):
     STATUS_PENDING = "pending"
@@ -71,7 +82,6 @@ class Appointment(models.Model):
     date_time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     notes = models.TextField(blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -1,40 +1,61 @@
 from rest_framework import serializers
 from .models import User, Branch, DoctorProfile, PatientProfile, Appointment
 
-class UserSerializer(serializers.ModelSerializer):
+# ---------------- User ----------------
+class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "first_name", "last_name", "role"]
+        fields = ["id", "username", "first_name", "last_name"]
 
-class BranchSerializer(serializers.ModelSerializer):
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = "__all__"  # все поля для деталей, POST, PATCH
+
+
+# ---------------- Branch ----------------
+class BranchListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Branch
-        fields = "__all__"
+        fields = ["id", "name", "phone", "director"]  # только 4 поля для списка
 
-class DoctorProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.ROLE_DOCTOR), source="user", write_only=True)
+class BranchDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Branch
+        fields = "__all__"  # все поля
 
+
+# ---------------- Doctor ----------------
+class DoctorListSerializer(serializers.ModelSerializer):
     class Meta:
         model = DoctorProfile
-        fields = ["id", "user", "user_id", "branch", "specialization"]
+        fields = ["id", "user", "branch", "specialization"]
 
-class PatientProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.ROLE_PATIENT), source="user", write_only=True)
+class DoctorDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorProfile
+        fields = "__all__"
 
+
+# ---------------- Patient ----------------
+class PatientListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PatientProfile
-        fields = ["id", "user", "user_id", "phone", "birthdate"]
+        fields = ["id", "user", "phone", "birthdate"]
 
-class AppointmentSerializer(serializers.ModelSerializer):
-    doctor = DoctorProfileSerializer(read_only=True)
-    doctor_id = serializers.PrimaryKeyRelatedField(queryset=DoctorProfile.objects.all(), source="doctor", write_only=True)
-    patient = PatientProfileSerializer(read_only=True)
-    patient_id = serializers.PrimaryKeyRelatedField(queryset=PatientProfile.objects.all(), source="patient", write_only=True)
-    branch = BranchSerializer(read_only=True)
-    branch_id = serializers.PrimaryKeyRelatedField(queryset=Branch.objects.all(), source="branch", write_only=True, allow_null=True, required=False)
+class PatientDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientProfile
+        fields = "__all__"
 
+
+# ---------------- Appointment ----------------
+class AppointmentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
-        fields = ["id", "doctor", "doctor_id", "patient", "patient_id", "branch","branch_id", "date_time", "status", "notes", "created_at"]
+        fields = ["id", "doctor", "patient", "date_time"]
+
+class AppointmentDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = "__all__"
