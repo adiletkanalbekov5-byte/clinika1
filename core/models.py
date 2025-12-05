@@ -54,10 +54,20 @@ class DoctorProfile(models.Model):
         return f"Dr. {self.user.get_full_name() or self.user.username}"
 
 
+# core/models.py
+# core/models.py
 class PatientProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient_profile")
-    phone = models.CharField(max_length=50, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=20)
     birthdate = models.DateField(null=True, blank=True)
+    address = models.CharField(max_length=255, default="")  # если нужно
+    complaints = models.TextField(blank=True, default="")
+    date_time = models.DateTimeField(auto_now_add=True)
+    doctor = models.ForeignKey(DoctorProfile, on_delete=models.SET_NULL, null=True, blank=True)
+    # остальные поля...
+
+
+
 
     def __str__(self):
         return self.user.get_full_name() or self.user.username
